@@ -21,8 +21,11 @@ void processKeyboardInput(sf::Time time, RAWKEYBOARD rawInput) {
 
     Input::Type type = rawInput.Flags & RI_KEY_BREAK ? Input::ButtonUp : Input::ButtonDown;
 
+    bool isExtendedKey = (rawInput.Flags & RI_KEY_E0);
+
+
     // shared_ptr<Input> input = make_shared<KeyboardInput>(wparam, rawInput->vkCode);
-    shared_ptr<Input> input = Input::CreateKeyboardInput(rawInput.MakeCode, type, time);
+    shared_ptr<Input> input = Input::CreateKeyboardInput(rawInput.MakeCode, type, time, isExtendedKey);
     // make_shared<KeyboardInput>(rawInput.MakeCode, type, time);
     //input->print();
 

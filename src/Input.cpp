@@ -7,7 +7,8 @@ using std::endl;
 using std::string;
 using std::make_shared;
 
-const sf::Vector2f screenToNormalizedMouseCoords = sf::Vector2f(1/1920.f * 65555.f, 1/1080.f * 65555.f);
+
+const sf::Vector2f screenToNormalizedMouseCoords = sf::Vector2f(1.f/GetSystemMetrics(SM_CXSCREEN) * 65555.f, 1.f/GetSystemMetrics(SM_CYSCREEN) * 65555.f);
 
 
 vector<INPUT> Input::GenerateInputStructure(Input &input) {
@@ -46,6 +47,9 @@ INPUT Input::GenerateKeyboardInputStructureSingle(Input &input) {
     if(input.type == Input::ButtonUp)
         rawInput.ki.dwFlags = rawInput.ki.dwFlags | KEYEVENTF_KEYUP;
 
+    if(input.isExtendedButton)
+        rawInput.ki.dwFlags = rawInput.ki.dwFlags | KEYEVENTF_EXTENDEDKEY;
+
     return rawInput;
 }
 
@@ -77,17 +81,17 @@ INPUT Input::GenerateMouseInputStructureSingle(Input &input) {
     return rawInput;
 }
 
-shared_ptr<Input> Input::CreateKeyboardInput(unsigned int scanCode, Type inputType, sf::Time inputTime) {
+shared_ptr<Input> Input::CreateKeyboardInput(unsigned int scanCode, Type inputType, sf::Time inputTime, bool _isExtendedKey) {
 
-    shared_ptr<Input> input(new Input(scanCode, inputType, inputTime, sf::Vector2u(0,0), Keyboard));
+    shared_ptr<Input> input(new Input(scanCode, inputType, inputTime, sf::Vector2u(0,0), Keyboard, _isExtendedKey));
     input->_generateRawInputStructureSingle = Input::GenerateKeyboardInputStructureSingle;
 
     return input;
 }
 
-shared_ptr<Input> Input::CreateKeyboardInput(unsigned int scanCode, Type inputType) {
+shared_ptr<Input> Input::CreateKeyboardInput(unsigned int scanCode, Type inputType, bool _isExtendedKey) {
 
-    shared_ptr<Input> input(new Input(scanCode, inputType, sf::Time(), sf::Vector2u(0,0), Keyboard));
+    shared_ptr<Input> input(new Input(scanCode, inputType, sf::Time(), sf::Vector2u(0,0), Keyboard, _isExtendedKey));
     input->_generateRawInputStructureSingle = Input::GenerateKeyboardInputStructureSingle;
 
     return input;
@@ -138,12 +142,13 @@ void Input::print() {
 
 }
 
-Input::Input(unsigned int _buttonId, Type _type, sf::Time _time, sf::Vector2u _mousePos, Device _device) :
+Input::Input(unsigned int _buttonId, Type _type, sf::Time _time, sf::Vector2u _mousePos, Device _device, bool _isExtendedButton) :
     type(_type),
     buttonId(_buttonId),
     time(_time),
     mousePos(_mousePos),
-    device(_device)
+    device(_device),
+    isExtendedButton(_isExtendedButton)
     {
 
     }

@@ -25,8 +25,8 @@ public:
         Right = 2
     };
 
-    static shared_ptr<Input> CreateKeyboardInput(unsigned int scanCode, Type inputType, sf::Time inputTime);
-    static shared_ptr<Input> CreateKeyboardInput(unsigned int scanCode, Type inputType);
+    static shared_ptr<Input> CreateKeyboardInput(unsigned int scanCode, Type inputType, sf::Time inputTime, bool _isExtendedKey = false);
+    static shared_ptr<Input> CreateKeyboardInput(unsigned int scanCode, Type inputType, bool _isExtendedKey = false);
     static shared_ptr<Input> CreateMouseInput(MouseButtonId buttonId, Type inputType, sf::Time inputTime, sf::Vector2u _mouseScreenPos);
 
     static vector<INPUT> GenerateKeyboardInputStructure(Input &keyboardInput);
@@ -66,12 +66,15 @@ private:
     };
 
     Input();
-    Input(unsigned int _buttonId, Type _type, sf::Time _time, sf::Vector2u _mousePos, Device _device);
+    Input(unsigned int _buttonId, Type _type, sf::Time _time, sf::Vector2u _mousePos, Device _device, bool _isExtendedButton = false);
 
     Type type;
 
     //scan code for keyboard input, mouse button id for mouse input
     unsigned int buttonId;
+
+    //if set to true then need to set KEYEVENTTF_EXTENDEDKEY in sendinput
+    bool isExtendedButton;
 
     //position of the mouse, normalized coordiantes between 1-65555 as per the sendinput docs
     sf::Vector2u mousePos;
