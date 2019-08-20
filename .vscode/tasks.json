@@ -10,12 +10,10 @@
             "args": [
                 "all"
             ],
-            "presentation": {
-                "reveal": "always"
-            },
             "problemMatcher": [
                 "$gcc"
             ],
+            "group": "build"
         },
 
         {
@@ -32,7 +30,7 @@
             "problemMatcher": [
                 "$gcc"
             ],
-            "group":{
+            "group": {
                 "kind": "build",
                 "isDefault": true
             }
