@@ -1,9 +1,11 @@
 #include "MacroRecorder.hpp"
 #include <iostream>
 #include <algorithm>
+#include <thread>
 
 using namespace std;
 
+using std::thread;
 using std::sort;
 using std::mutex;
 using std::lock_guard;
@@ -73,29 +75,62 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
     }
 }
 
+// void MacroRecorder::update() {
+
+//     //nothing to do
+//     if(currentState != Playing)
+//         return;
+    
+//     sf::Time timeSincePlayBegan = globalClock->getElapsedTime() - startTime;
+
+//     //playing
+//     while(currentInputIndex < inputs.size() &&
+//         timeSincePlayBegan >= inputs[currentInputIndex]->time) {
+        
+//         mutex.lock();
+//         inputs[currentInputIndex]->sendToSystem();
+//         currentInputIndex++;
+//         mutex.unlock();
+//     }
+
+//     if(currentInputIndex >= inputs.size()) {
+//         stop(true);
+//         play(true);
+//         return;
+//     }
+
+//     //prevent taking system resources if the next input isn't coming up anytime soon
+//     if(inputs[currentInputIndex]->time - timeSincePlayBegan > sf::milliseconds(10))
+//         Sleep(1);
+        
+// }
+
 void MacroRecorder::update() {
 
-    //nothing to do
-    if(currentState != Playing)
-        return;
-    
-    sf::Time timeSincePlayBegan = globalClock->getElapsedTime() - startTime;
+    while(currentState == Playing) {
 
-    lock_guard<std::mutex> lock(mutex);
+        sf::Time timeSincePlayBegan = globalClock->getElapsedTime() - startTime;
 
-    //playing
-    while(currentInputIndex < inputs.size() &&
-        timeSincePlayBegan >= inputs[currentInputIndex]->time) {
-        
-        inputs[currentInputIndex]->sendToSystem();
-        currentInputIndex++;
+        //playing
+        while(currentInputIndex < inputs.size() &&
+            timeSincePlayBegan >= inputs[currentInputIndex]->time) {
+            
+            mutex.lock();
+            inputs[currentInputIndex]->sendToSystem();
+            currentInputIndex++;
+            mutex.unlock();
+        }
+
+        if(currentInputIndex >= inputs.size()) {
+            stop(true);
+            play(true);
+            return;
+        }
+
+        //prevent taking system resources if the next input isn't coming up anytime soon
+        if(inputs[currentInputIndex]->time - timeSincePlayBegan > sf::milliseconds(10))
+            Sleep(1);
     }
-
-    if(currentInputIndex >= inputs.size()) {
-        stop();
-        play();
-    }
-        
 }
 
 void MacroRecorder::printKeys(bool block) {
@@ -181,6 +216,9 @@ void MacroRecorder::play(bool block) {
 
     if(block)
         mutex.unlock();
+
+    thread updateThread(MacroRecorder::update, this);
+    updateThread.detach();
 }
 
 void MacroRecorder::stop(bool block) {
@@ -195,6 +233,10 @@ void MacroRecorder::stop(bool block) {
 
     if(block)
         mutex.unlock();
+}
+
+void MacroRecorder::save(bool block) {
+
 }
 
 void MacroRecorder::clearMacro(bool block) {

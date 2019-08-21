@@ -40,10 +40,7 @@ INPUT Input::GenerateKeyboardInputStructureSingle(Input &input) {
     rawInput.ki.wVk = 0;
     rawInput.ki.wScan = input.buttonId;
     rawInput.ki.dwFlags =  KEYEVENTF_SCANCODE;
-    // WORD test = scanCode;
-    // rawInput.ki.wScan = scanCode;
 
-    // cout << "TEST:" << test << "SCANCODE:" << (scanCode == rawInput.ki.wScan) << endl;
     if(input.type == Input::ButtonUp)
         rawInput.ki.dwFlags = rawInput.ki.dwFlags | KEYEVENTF_KEYUP;
 

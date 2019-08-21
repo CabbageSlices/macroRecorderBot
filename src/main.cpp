@@ -24,28 +24,9 @@ void processKeyboardInput(sf::Time time, RAWKEYBOARD rawInput) {
     bool isExtendedKey = (rawInput.Flags & RI_KEY_E0);
 
 
-    // shared_ptr<Input> input = make_shared<KeyboardInput>(wparam, rawInput->vkCode);
     shared_ptr<Input> input = Input::CreateKeyboardInput(rawInput.MakeCode, type, time, isExtendedKey);
-    // make_shared<KeyboardInput>(rawInput.MakeCode, type, time);
-    //input->print();
-
-    // KeyboardInput input(wparam, rawInput->vkCode);
     recorder.processInput(input);
 }
-
-// void processKeyboardInput2(sf::Time time, WPARAM wparam, KBDLLHOOKSTRUCT *rawInput) {
-
-//     wparam = wparam == WM_SYSKEYDOWN ? WM_KEYDOWN : wparam;
-//     wparam = wparam == WM_SYSKEYUP ? WM_KEYUP : wparam;
-
-//     // shared_ptr<Input> input = make_shared<KeyboardInput>(wparam, rawInput->vkCode);
-//     shared_ptr<KeyboardInput> input = make_shared<KeyboardInput>(wparam, rawInput->scanCode);
-//     input->time = time;
-//     //input->print();
-
-//     // KeyboardInput input(wparam, rawInput->vkCode);
-//     recorder.processInput(input);
-// }
 
 void processMouseInput(sf::Time time, WPARAM wparam, MSLLHOOKSTRUCT rawInput) {
 
@@ -97,9 +78,6 @@ LRESULT CALLBACK lowLevelMouseProc(int nCode, WPARAM wparam, LPARAM lparam) {
     sf::Time inputTime = globalTimer.getElapsedTime();
     auto inputData = (MSLLHOOKSTRUCT*)lparam;
 
-    // if(wparam == WM_MOUSEMOVE || wparam == WM_MOUSEWHEEL || wparam == WM_MOUSEWHEEL)
-    //     return CallNextHookEx(NULL, nCode, wparam, lparam);
-
     thread inputProcessor( processMouseInput, inputTime, wparam, *inputData);
     inputProcessor.detach();
 
@@ -119,19 +97,11 @@ void cannyThreshold(int thing, void* thing2) {
     imshow("test", dst);
 }
 
-void recorderLoop() {
-
-    while(isProgramRunning) {
-        recorder.update();
-    }
-}
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 int main() {
 
-    thread recorderThread(recorderLoop);
-
+    //create the window
     WNDCLASS wc = {0};
     const char* name = "TEST";
 
@@ -143,6 +113,7 @@ int main() {
 
     HWND hwnd = CreateWindowEx(0, wc.lpszClassName, NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
 
+    //register raw input 
     RAWINPUTDEVICE Rid;
     Rid.usUsagePage = 0x01;
     Rid.usUsage = 6;
@@ -154,6 +125,7 @@ int main() {
         return 0;
     }
 
+    //start receiving mouse input
     HHOOK mouse = SetWindowsHookEx(WH_MOUSE_LL, &lowLevelMouseProc, NULL, 0);
 
     if( !mouse) {
@@ -162,6 +134,7 @@ int main() {
         UnhookWindowsHookEx(mouse);
     }
 
+    //window message loop
     MSG msg;
 
     while(GetMessage(&msg, NULL, 0, 0) != 0) {
@@ -170,7 +143,6 @@ int main() {
     }
 
     isProgramRunning = false;
-    recorderThread.join();
 
     UnhookWindowsHookEx(mouse);
 
@@ -204,56 +176,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
     }
-}
-
-int main5() {
-
-    HHOOK mouse = SetWindowsHookEx(WH_MOUSE_LL, &lowLevelMouseProc, NULL, 0);
-
-    if( !mouse) {
-        cout << "HOOK FAILED" << endl;
-
-        UnhookWindowsHookEx(mouse);
-    }
-
-    MSG msg;
-
-    while(GetMessage(&msg, NULL, 0, 0)) {
-
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-    UnhookWindowsHookEx(mouse);
-}
-
-int main3() {
-
-    // sf::Window window(sf::VideoMode(800, 600), "OpenGL",
-	// 	sf::Style::Default, sf::ContextSettings(24, 8, 4, 4, 5, sf::ContextSettings::Core));
-
-    // thread hooks(manageHooks);
-
-
-    // sf::Event event;
-
-    // bool isOpen = true;
-    
-    // sf::Clock clock;
-    // while(isOpen) {
-
-    //     while(window.pollEvent(event)) {
-    //         if(event.type == sf::Event::Closed)
-    //             isOpen = false;
-    //     }
-
-    //     recorder.update();
-        
-    // }
-
-    // window.close();
-
-    // hooks.join();
 }
 
 int main2() {

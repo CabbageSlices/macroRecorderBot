@@ -33,14 +33,16 @@ public:
     static vector<INPUT> GenerateMouseInputStructure(Input &mouseInput);
     static vector<INPUT> GenerateInputStructure(Input &input);
 
-
     static INPUT GenerateKeyboardInputStructureSingle(Input &keyboardInput);
     static INPUT GenerateMouseInputStructureSingle(Input &mouseInput);
 
     vector<INPUT> generateRawInputStructure();
     void sendToSystem();
 
+    //if the given input is the same button as this one, but the other one is a button up event, this returns true
     bool isSameButtonReleased(Input &other);
+
+    //returns true if the device, button, and aciton is the same
     bool isSameInput(Input &other);
     void print();
 

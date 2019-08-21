@@ -38,6 +38,8 @@ public:
 
     void printKeys(bool block = false);
 
+    void save(bool block = false);
+
 private:
 
     //after inputs are recorded, need to process them to make them cleaner
@@ -47,14 +49,10 @@ private:
     State currentState; 
     vector<shared_ptr<Input> > inputs;
 
+    //scancodes
     shared_ptr<Input> playKey = Input::CreateKeyboardInput(0x3E, Input::ButtonDown);
     shared_ptr<Input> recordKey = Input::CreateKeyboardInput(0x3C, Input::ButtonDown);
     shared_ptr<Input> stopKey = Input::CreateKeyboardInput(0x3D, Input::ButtonDown);
-
-    //scan codes
-    // KeyboardInput playKey = KeyboardInput(WM_KEYDOWN, 0x3B);
-    // KeyboardInput recordKey = KeyboardInput(WM_KEYDOWN, 0x3C);
-    // KeyboardInput stopKey = KeyboardInput(WM_KEYDOWN, 0x3D);
 
     //virtual key
     // KeyboardInput playKey = KeyboardInput(WM_KEYDOWN, 0x70);
