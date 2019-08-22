@@ -84,19 +84,6 @@ LRESULT CALLBACK lowLevelMouseProc(int nCode, WPARAM wparam, LPARAM lparam) {
     return CallNextHookEx(NULL, nCode, wparam, lparam);
 }
 
-Mat image, imageGrey, dst, cannyOutput;
-
-void cannyThreshold(int thing, void* thing2) {
-    int threshold = *(int*)thing2;
-
-    
-    Canny(imageGrey, cannyOutput, threshold, threshold * 3, 3);
-    dst = Scalar::all(0);
-    imageGrey.copyTo(dst, cannyOutput);
-
-    imshow("test", dst);
-}
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 int main() {
@@ -178,7 +165,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     }
 }
 
-int main2() {
+
+// Mat image, imageGrey, dst, cannyOutput;
+
+// void cannyThreshold(int thing, void* thing2) {
+//     int threshold = *(int*)thing2;
+
+    
+//     Canny(imageGrey, cannyOutput, threshold, threshold * 3, 3);
+//     dst = Scalar::all(0);
+//     imageGrey.copyTo(dst, cannyOutput);
+
+//     imshow("test", dst);
+// }
+
+
+// int main2() {
 
     // HHOOK keyboard = SetWindowsHookEx(WH_KEYBOARD_LL, &lowLevelKeyboardProc, NULL, 0);
     // HHOOK mouse = SetWindowsHookEx(WH_MOUSE_LL, &lowLevelMouseProc, NULL, 0);
@@ -250,5 +252,5 @@ int main2() {
     // UnhookWindowsHookEx(keyboard);
     // UnhookWindowsHookEx(mouse);
     
-    return 0;
-}
+//     return 0;
+// }
