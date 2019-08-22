@@ -26,6 +26,7 @@ public:
 
     void processInput(shared_ptr<Input> input);
 
+    //to be used in it's own thread
     void update();
 
     //if block is set to true then funcitons will lock a mutex while executing
