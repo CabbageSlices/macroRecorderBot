@@ -6,6 +6,7 @@
 #include <SFML/System.hpp>
 #include "Input.hpp"
 #include <memory>
+#include "Macro.hpp"
 
 using std::vector;
 using std::shared_ptr;
@@ -15,14 +16,16 @@ enum State {
     Recording,
     RecordingPaused,
     Playing,
-    PlaybackPaused
+    PlaybackPaused,
+    saving,
+    loading,
 };
 
 class MacroRecorder {
 
 public:
 
-    MacroRecorder(sf::Clock *_globalClock): globalClock(_globalClock){}
+    MacroRecorder(sf::Clock *_globalClock);
 
     void processInput(shared_ptr<Input> input);
 
@@ -45,15 +48,20 @@ private:
 
     //after inputs are recorded, need to process them to make them cleaner
     //stuff like sorting by timestamp, removing repeated keydowns, etc
-    void cleanupInputs();
+    void cleanupInputs(bool block = false);
 
     State currentState; 
+    Macro currentMacro;
+
     vector<shared_ptr<Input> > inputs;
 
     //scancodes
     shared_ptr<Input> playKey = Input::CreateKeyboardInput(0x3E, Input::ButtonDown);
     shared_ptr<Input> recordKey = Input::CreateKeyboardInput(0x3C, Input::ButtonDown);
     shared_ptr<Input> stopKey = Input::CreateKeyboardInput(0x3D, Input::ButtonDown);
+    shared_ptr<Input> saveKey = Input::CreateKeyboardInput(0x3F, Input::ButtonDown);
+
+    vector<shared_ptr<Input> > hotkeys;
 
     //virtual key
     // KeyboardInput playKey = KeyboardInput(WM_KEYDOWN, 0x70);
@@ -62,7 +70,7 @@ private:
 
     int currentInputIndex = 0;
 
-    sf::Clock *globalClock;
+    sf::Clock *globalClock;//pointer to the global clock
 
     sf::Time startTime;
 
