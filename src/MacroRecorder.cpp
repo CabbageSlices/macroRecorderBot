@@ -22,11 +22,6 @@ MacroRecorder::MacroRecorder(sf::Clock *_globalClock) :
 
 void MacroRecorder::processInput(shared_ptr<Input> input) {
 
-    //ignore key releases for hotkeys
-    // if(stopKey->isSameButtonReleased(*input) || recordKey->isSameButtonReleased(*input) || playKey->isSameButtonReleased(*input)) {
-    //     return;
-    // }
-
     for(unsigned i = 0; i < hotkeys.size(); ++i) {
         if(hotkeys[i]->isSameButtonReleased(*input))
             return;
@@ -55,12 +50,6 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
             input->time -= startTime;
             currentMacro.insertInput(input);
 
-            // mutex.lock();
-
-            // //input, record the input
-            // inputs.push_back(input);
-            // currentMacro.insertInput(input);
-            // mutex.unlock();
             break;
         }
 
@@ -68,8 +57,7 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
 
             //if play was pressed
             if(input->isSameInput(*playKey)) {
-                // std::lock_guard<std::mutex> lock(mutex);
-                // startTime = input->time;
+                
                 //printKeys();
                 play(true);
                 break;
@@ -77,8 +65,7 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
 
             //if record was pressed
             if(input->isSameInput(*recordKey)) {
-                // std::lock_guard<std::mutex> lock(mutex);
-                // startTime = input->time;
+               
                 startRecording(true);
                 break;
             }
@@ -106,11 +93,7 @@ void MacroRecorder::update() {
         if(currentMacro.getTimeToNextInput(currentTime) > sf::milliseconds(7))
             Sleep(1);
 
-        // sf::Time timeSincePlayBegan = globalClock->getElapsedTime() - startTime;
-
-        // mutex.lock();
         currentMacro.updatePlayback(currentTime);
-        // mutex.unlock();
 
         //finished playing so its stopped
         if(currentMacro.getCurrentState() != Macro::Playing) {
@@ -118,22 +101,6 @@ void MacroRecorder::update() {
             return;
         }
 
-        //playing
-        // while(currentInputIndex < inputs.size() &&
-        //     timeSincePlayBegan >= inputs[currentInputIndex]->time) {
-            
-        //     mutex.lock();
-        //     inputs[currentInputIndex]->sendToSystem();
-        //     currentInputIndex++;
-        //     mutex.unlock();
-        // }
-
-        // if(currentInputIndex >= inputs.size()) {
-        //     stop(true);
-        //     return;
-        // }
-
-        //prevent taking system resources if the next input isn't coming up anytime soon
     
     }
 }
@@ -223,11 +190,12 @@ void MacroRecorder::cleanupInputs(bool block) {
 
 void MacroRecorder::play(bool block) {
 
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    cout << "Playing macro, press F3 at anytime to stop" << endl;
+    
     if(block)
         mutex.lock();
 
-    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
-    cout << "Playing macro, press F3 at anytime to stop" << endl;
     currentInputIndex = 0;
     currentState = Playing;
     startTime = globalClock->getElapsedTime();
