@@ -17,6 +17,7 @@ MacroRecorder::MacroRecorder(sf::Clock *_globalClock) :
         hotkeys.push_back(stopKey);
         hotkeys.push_back(recordKey);
         hotkeys.push_back(saveKey);
+        hotkeys.push_back(pauseKey);
         stop(true);
     }
 
@@ -32,6 +33,10 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
             if(input->isSameInput(*stopKey)) {
                 stop(true);
             }
+
+            if(input->isSameInput(*pauseKey)) {
+                pause();
+            }
             break;//can't let this fall through because it might continue recording
         
         case Recording: {
@@ -41,8 +46,17 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
                 break;
             }
 
-            if(input->isSameInput(*playKey) || input->isSameInput(*recordKey) || input->isSameInput(*saveKey)) {
-                break;//don't record the play or record button, otherwise you'll get weird bugs
+            //ignore hotkeys while recording
+            bool ignoreKey = false;
+            for(unsigned i = 0; i < hotkeys.size(); ++i) {
+                if(hotkeys[i]->isSameInput(*input)) {
+                    ignoreKey = true;
+                    break;
+                }
+            }
+
+            if(ignoreKey) {
+                break;
             }
 
             //input times are relative to the start of the program, and startTime is also relative to the start of the program
@@ -72,10 +86,24 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
 
             if(input->isSameInput(*saveKey)) {
                 save(true);
+                break;;
             }
             
             //if clear was pressed 
             // clearMacro();
+            break;
+        }
+
+        case Paused: {
+            if(pauseKey->isSameInput(*input) || playKey->isSameInput(*input)) {
+                unpause();
+                break;
+            }
+
+            if(stopKey->isSameInput(*input)) {
+                stop(true);
+                break;
+            }
             break;
         }
         default:
@@ -94,14 +122,12 @@ void MacroRecorder::update() {
             Sleep(1);
 
         currentMacro.updatePlayback(currentTime);
+    }
 
-        //finished playing so its stopped
-        if(currentMacro.getCurrentState() != Macro::Playing) {
-            stop(true);
-            return;
-        }
-
-    
+    //finished playing so its stopped
+    if(currentMacro.getCurrentState() == Macro::Stopped) {
+        stop();
+        return;
     }
 }
 
@@ -126,7 +152,7 @@ void MacroRecorder::startRecording(bool block) {
     if(block)
         mutex.unlock();
 
-    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    // dcout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Recording. Press F3 at anytime to stop recording" << endl;
 }
 
@@ -190,7 +216,7 @@ void MacroRecorder::cleanupInputs(bool block) {
 
 void MacroRecorder::play(bool block) {
 
-    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    // cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Playing macro, press F3 at anytime to stop" << endl;
     
     if(block)
@@ -224,7 +250,7 @@ void MacroRecorder::stop(bool block) {
     currentMacro.stop();
     currentMacro.sort();
 
-    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    // cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Press the following buttons at anytime on any window to perform the indicated action" << endl;
     cout << "f2: Begin recording macro (this will override the current recording)" << endl;
     // cout << "f3: Stop recording/ playback of macro" << endl;
@@ -235,14 +261,37 @@ void MacroRecorder::stop(bool block) {
     // cleanupInputs();
 }
 
+void MacroRecorder::pause() {
+
+    mutex.lock();
+
+    currentMacro.pause(globalClock->getElapsedTime());
+    currentState = Paused;
+
+    mutex.unlock();
+
+    cout << "Paused playback, press f4 (play key) to resume" << endl; 
+
+}
+
+void MacroRecorder::unpause() {
+    mutex.lock();
+    currentMacro.resume(globalClock->getElapsedTime());
+    currentState = Playing;
+    mutex.unlock();
+
+    thread updateThread(MacroRecorder::update, this);
+    updateThread.detach();
+}
+
 void MacroRecorder::save(bool block) {
 
     if(block) {
         mutex.lock();
     }
 
-    currentState = saving;
-    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    currentState = Saving;
+    // cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Please type in the name of the macro and hit enter." << endl;
 
     string fileName;

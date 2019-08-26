@@ -17,8 +17,9 @@ enum State {
     RecordingPaused,
     Playing,
     PlaybackPaused,
-    saving,
-    loading,
+    Saving,
+    Loading,
+    Paused,
 };
 
 class MacroRecorder {
@@ -38,6 +39,8 @@ public:
 
     //stops current action (playing/ recording)
     void stop(bool block= false);
+    void pause();
+    void unpause();
     void clearMacro(bool block = false);
 
     void printKeys(bool block = false);
@@ -56,10 +59,11 @@ private:
     vector<shared_ptr<Input> > inputs;
 
     //scancodes
-    shared_ptr<Input> playKey = Input::CreateKeyboardInput(0x3E, Input::ButtonDown);
-    shared_ptr<Input> recordKey = Input::CreateKeyboardInput(0x3C, Input::ButtonDown);
-    shared_ptr<Input> stopKey = Input::CreateKeyboardInput(0x3D, Input::ButtonDown);
-    shared_ptr<Input> saveKey = Input::CreateKeyboardInput(0x3F, Input::ButtonDown);
+    shared_ptr<Input> playKey = Input::CreateKeyboardInput(0x3E, Input::ButtonDown);//f4
+    shared_ptr<Input> recordKey = Input::CreateKeyboardInput(0x3C, Input::ButtonDown);//f2
+    shared_ptr<Input> stopKey = Input::CreateKeyboardInput(0x3D, Input::ButtonDown);//f3
+    shared_ptr<Input> saveKey = Input::CreateKeyboardInput(0x3F, Input::ButtonDown);//f5
+    shared_ptr<Input> pauseKey = Input::CreateKeyboardInput(0x40, Input::ButtonDown);//f6
 
     vector<shared_ptr<Input> > hotkeys;
 

@@ -22,6 +22,7 @@ public:
     void updatePlayback(sf::Time currentTime);
     void stop();
     void pause(sf::Time currentTime);
+    void resume(sf::Time currentTime);
 
     sf::Time getTimeToNextInput(sf::Time currentTime); //return the time left from now until the next input needs to be played
 
@@ -39,6 +40,9 @@ public:
 private:
 
     sf::Time elapsedPlaybackTime(sf::Time currentTime);
+    void getDownedKeysWhilePaused(vector<shared_ptr<Input> > &downedKeys);
+    void releaseDownedButtonsforPause(sf::Time currentTime);
+    void duplicateHeldKeysForUnpause(sf::Time currentTime);
 
     State currentState;
     sf::Time playbackStartTime;//global time
@@ -46,6 +50,7 @@ private:
 
     string name;
     vector<shared_ptr<Input> > inputs;
+    vector<shared_ptr<Input> > keysToPressAfterUnpause;
 
     unsigned int currentInputIndex;
     mutex _mutex;

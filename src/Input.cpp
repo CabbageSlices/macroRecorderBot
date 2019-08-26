@@ -114,6 +114,14 @@ void Input::sendToSystem() {
     SendInput(inputs.size(), inputs.data(), sizeof(INPUT));
 }
 
+void Input::sendToSystemAsType(Type _type) {
+    Type oldType = type;
+    type = _type;
+    print();
+    sendToSystem();
+    type = oldType;
+}
+
 void Input::print() {
     string deviceName = (device == Keyboard ? "Keybord" : "Mouse");
     string action = "pressed down";

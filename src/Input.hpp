@@ -38,6 +38,7 @@ public:
 
     vector<INPUT> generateRawInputStructure();
     void sendToSystem();
+    void sendToSystemAsType(Type _type);
 
     //if the given input is the same button as this one, but the other one is a button up event, this returns true
     bool isSameButtonReleased(Input &other);
