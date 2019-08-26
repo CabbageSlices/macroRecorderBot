@@ -34,25 +34,25 @@ public:
     void update();
 
     //if block is set to true then funcitons will lock a mutex while executing
-    void startRecording(bool block = false);
-    void play(bool block = false);
+    void startRecording();
+    void play();
 
     //stops current action (playing/ recording)
-    void stop(bool block= false);
+    void stop();
     void pause();
     void unpause();
-    void clearMacro(bool block = false);
+    void clearMacro();
 
-    void printKeys(bool block = false);
+    void printKeys();
 
-    void save(bool block = false);
+    void save();
     void load();
 
 private:
 
     //after inputs are recorded, need to process them to make them cleaner
     //stuff like sorting by timestamp, removing repeated keydowns, etc
-    void cleanupInputs(bool block = false);
+    void cleanupInputs();
 
     State currentState; 
     Macro currentMacro;

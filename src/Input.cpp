@@ -13,7 +13,7 @@ using std::make_shared;
 
 const sf::Vector2f screenToNormalizedMouseCoords = sf::Vector2f(1.f/GetSystemMetrics(SM_CXSCREEN) * 65555.f, 1.f/GetSystemMetrics(SM_CYSCREEN) * 65555.f);
 const string Input::KeyboardFormatDescriptionString = "format for keyboard input: deviceType inputType inputTime(milliseconds) scanCode isExtendedButton";
-const string Input::MouseFormatDescriptionString = "format for mouse input: deviceType inputType inputType(milliseconds) buttonId MousePositionX(between 1-65555) MousePosiitonY(between 1-65555)";
+const string Input::MouseFormatDescriptionString = "format for mouse input: deviceType inputType inputTime(milliseconds) buttonId MousePositionX(between 1-65555) MousePosiitonY(between 1-65555)";
 
 vector<INPUT> Input::GenerateInputStructure(Input &input) {
 

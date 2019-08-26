@@ -19,7 +19,7 @@ MacroRecorder::MacroRecorder(sf::Clock *_globalClock) :
         hotkeys.push_back(saveKey);
         hotkeys.push_back(loadKey);
         hotkeys.push_back(pauseKey);
-        stop(true);
+        stop();
     }
 
 void MacroRecorder::processInput(shared_ptr<Input> input) {
@@ -32,7 +32,7 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
     switch(currentState) {
         case Playing: 
             if(input->isSameInput(*stopKey)) {
-                stop(true);
+                stop();
             }
 
             if(input->isSameInput(*pauseKey)) {
@@ -43,7 +43,7 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
         case Recording: {
             
             if(input->isSameInput(*stopKey)) {
-                stop(true);
+                stop();
                 break;
             }
 
@@ -74,19 +74,19 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
             if(input->isSameInput(*playKey)) {
                 
                 //printKeys();
-                play(true);
+                play();
                 break;
             }
 
             //if record was pressed
             if(input->isSameInput(*recordKey)) {
                
-                startRecording(true);
+                startRecording();
                 break;
             }
 
             if(input->isSameInput(*saveKey)) {
-                save(true);
+                save();
                 break;;
             }
 
@@ -107,7 +107,7 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
             }
 
             if(stopKey->isSameInput(*input)) {
-                stop(true);
+                stop();
                 break;
             }
             break;
@@ -137,40 +137,39 @@ void MacroRecorder::update() {
     }
 }
 
-void MacroRecorder::printKeys(bool block) {
+void MacroRecorder::printKeys() {
     cout << endl << endl <<"\n\nPRINTING KEYS +++++++++" << endl;
     for(unsigned i = 0; i < inputs.size() ; ++i) {
         inputs[i]->print();
     }
 }
 
-void MacroRecorder::startRecording(bool block) {
-
-    if(block)
-        mutex.lock();
+void MacroRecorder::startRecording() {
 
     //clear previous recording
+    //blocks on it's own so no need to lock the mutex
     clearMacro();
+
+    mutex.lock();
 
     currentState = Recording;
     startTime = globalClock->getElapsedTime();
 
-    if(block)
-        mutex.unlock();
+    mutex.unlock();
 
     cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Recording. Press F3 at anytime to stop recording" << endl;
 }
 
-void MacroRecorder::cleanupInputs(bool block) {
+void MacroRecorder::cleanupInputs() {
 
-    if(block)
-        mutex.lock();
+
+    mutex.lock();
     sort(inputs.begin(), inputs.end(), compareInputPointers);
 
 
-    if(block)
-        mutex.unlock();
+
+    mutex.unlock();
 
     currentMacro.sort();
 
@@ -220,20 +219,18 @@ void MacroRecorder::cleanupInputs(bool block) {
     // }
 }
 
-void MacroRecorder::play(bool block) {
+void MacroRecorder::play() {
 
     cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Playing macro, press F3 at anytime to stop" << endl;
-    
-    if(block)
-        mutex.lock();
+
+    mutex.lock();
 
     currentInputIndex = 0;
     currentState = Playing;
     startTime = globalClock->getElapsedTime();
 
-    if(block)
-        mutex.unlock();
+    mutex.unlock();
 
         
     currentMacro.beginPlayback(startTime);
@@ -242,16 +239,14 @@ void MacroRecorder::play(bool block) {
     updateThread.detach();
 }
 
-void MacroRecorder::stop(bool block) {
+void MacroRecorder::stop() {
 
-    if(block)
-        mutex.lock();
+    mutex.lock();
 
     currentInputIndex = 0;
     currentState = Idle;
 
-    if(block)
-        mutex.unlock();
+    mutex.unlock();
 
     currentMacro.stop();
     currentMacro.sort();
@@ -259,12 +254,9 @@ void MacroRecorder::stop(bool block) {
     cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Press the following buttons at anytime on any window to perform the indicated action" << endl;
     cout << "f2: Begin recording macro (this will override the current recording)" << endl;
-    // cout << "f3: Stop recording/ playback of macro" << endl;
     cout << "f4: Play macro" << endl;
     cout << "f7: save macro" << endl;
     cout << "f8: load macro" << endl;
-
-    // cleanupInputs();
 }
 
 void MacroRecorder::pause() {
@@ -290,13 +282,12 @@ void MacroRecorder::unpause() {
     updateThread.detach();
 }
 
-void MacroRecorder::save(bool block) {
+void MacroRecorder::save() {
 
-    if(block) {
-        mutex.lock();
-    }
+    mutex.lock();
 
     currentState = Saving;
+
     cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Please type in the name of the macro and hit enter." << endl;
 
@@ -316,17 +307,17 @@ void MacroRecorder::save(bool block) {
     }
 
     cout << "saving, please wait" << endl;
+
     if(!currentMacro.save(fileName + ".txt")) {
         cout << "FAILED TO SAVE MACRO" << endl;
     } else {
         cout << "save complete" << endl;
     }
 
-    if(block) {
-        mutex.unlock();
-    }
 
-    stop(true);
+    mutex.unlock();
+
+    stop();
 }
 
 void MacroRecorder::load() {
@@ -346,21 +337,17 @@ void MacroRecorder::load() {
     }
 
     mutex.unlock();
-    stop(true);
+    stop();
 
 }
 
-void MacroRecorder::clearMacro(bool block) {
+void MacroRecorder::clearMacro() {
 
-    if(block)
-        mutex.lock();
+    mutex.lock();
 
     inputs.clear();
 
-    
-    if(block)
-        mutex.unlock();
+    mutex.unlock();
 
     currentMacro.reset();
-
 }
