@@ -17,6 +17,7 @@ MacroRecorder::MacroRecorder(sf::Clock *_globalClock) :
         hotkeys.push_back(stopKey);
         hotkeys.push_back(recordKey);
         hotkeys.push_back(saveKey);
+        hotkeys.push_back(loadKey);
         hotkeys.push_back(pauseKey);
         stop(true);
     }
@@ -88,6 +89,11 @@ void MacroRecorder::processInput(shared_ptr<Input> input) {
                 save(true);
                 break;;
             }
+
+            if(input->isSameInput(*loadKey)) {
+                load();
+                break;;
+            }
             
             //if clear was pressed 
             // clearMacro();
@@ -152,7 +158,7 @@ void MacroRecorder::startRecording(bool block) {
     if(block)
         mutex.unlock();
 
-    // dcout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Recording. Press F3 at anytime to stop recording" << endl;
 }
 
@@ -216,7 +222,7 @@ void MacroRecorder::cleanupInputs(bool block) {
 
 void MacroRecorder::play(bool block) {
 
-    // cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Playing macro, press F3 at anytime to stop" << endl;
     
     if(block)
@@ -250,13 +256,13 @@ void MacroRecorder::stop(bool block) {
     currentMacro.stop();
     currentMacro.sort();
 
-    // cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Press the following buttons at anytime on any window to perform the indicated action" << endl;
     cout << "f2: Begin recording macro (this will override the current recording)" << endl;
     // cout << "f3: Stop recording/ playback of macro" << endl;
     cout << "f4: Play macro" << endl;
-    cout << "f5: save macro" << endl;
-    cout << "f6: load macro" << endl;
+    cout << "f7: save macro" << endl;
+    cout << "f8: load macro" << endl;
 
     // cleanupInputs();
 }
@@ -291,11 +297,13 @@ void MacroRecorder::save(bool block) {
     }
 
     currentState = Saving;
-    // cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
     cout << "Please type in the name of the macro and hit enter." << endl;
 
     string fileName;
     std::getline(cin, fileName);
+
+    currentMacro.setName(fileName);
 
     //strip spaces
     for(unsigned i = 0; i < fileName.size();) {
@@ -308,12 +316,38 @@ void MacroRecorder::save(bool block) {
     }
 
     cout << "saving, please wait" << endl;
-    currentMacro.save(fileName + ".txt");
+    if(!currentMacro.save(fileName + ".txt")) {
+        cout << "FAILED TO SAVE MACRO" << endl;
+    } else {
+        cout << "save complete" << endl;
+    }
 
-    cout << "save complete" << endl;
     if(block) {
         mutex.unlock();
     }
+
+    stop(true);
+}
+
+void MacroRecorder::load() {
+    mutex.lock();
+
+    currentState = Loading;
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    cout << "Please type in the filename of the macro and hit enter(without the .txt extension)." << endl;
+
+    string fileName;
+    std::getline(cin, fileName);
+
+    if(!currentMacro.load(fileName + ".txt")) {
+        cout << "FAILED TO LOAD MACRO" << endl;
+    } else {
+        cout << "successfuly loaded macro" << endl;
+    }
+
+    mutex.unlock();
+    stop(true);
+
 }
 
 void MacroRecorder::clearMacro(bool block) {

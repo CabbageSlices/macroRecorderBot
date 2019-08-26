@@ -1,15 +1,19 @@
 #include "Input.hpp"
 #include <string>
 #include <iostream>
+#include "StringMethods.h"
 
 using std::cout;
+using std::stoi;
+using std::stoul;
 using std::endl;
 using std::string;
 using std::make_shared;
 
 
 const sf::Vector2f screenToNormalizedMouseCoords = sf::Vector2f(1.f/GetSystemMetrics(SM_CXSCREEN) * 65555.f, 1.f/GetSystemMetrics(SM_CYSCREEN) * 65555.f);
-
+const string Input::KeyboardFormatDescriptionString = "format for keyboard input: deviceType inputType inputTime(milliseconds) scanCode isExtendedButton";
+const string Input::MouseFormatDescriptionString = "format for mouse input: deviceType inputType inputType(milliseconds) buttonId MousePositionX(between 1-65555) MousePosiitonY(between 1-65555)";
 
 vector<INPUT> Input::GenerateInputStructure(Input &input) {
 
@@ -94,13 +98,44 @@ shared_ptr<Input> Input::CreateKeyboardInput(unsigned int scanCode, Type inputTy
     return input;
 }
 
-shared_ptr<Input> Input::CreateMouseInput(MouseButtonId buttonId, Type inputType, sf::Time inputTime, sf::Vector2u mousePos) {
+shared_ptr<Input> Input::CreateMouseInput(MouseButtonId buttonId, Type inputType, sf::Time inputTime, sf::Vector2u mousePos, bool normalizeCoordinates) {
 
-    sf::Vector2u normalizedPos(mousePos.x * screenToNormalizedMouseCoords.x, mousePos.y * screenToNormalizedMouseCoords.y);
+    sf::Vector2u normalizedPos = mousePos;
+    
+    if(normalizeCoordinates) {
+        normalizedPos = sf::Vector2u(mousePos.x * screenToNormalizedMouseCoords.x, mousePos.y * screenToNormalizedMouseCoords.y);
+    }
     shared_ptr<Input> input(new Input((unsigned int) buttonId, inputType, inputTime, normalizedPos, Mouse));
     input->_generateRawInputStructureSingle = Input::GenerateMouseInputStructureSingle;
 
     return input;
+}
+
+shared_ptr<Input> Input::CreateInputFromDescriptionString(string description) {
+
+    vector<string> items;
+    separateIntoWords(description, items, ' ');
+    
+    Device device = (Device)stoi(items[0]);
+
+    if(device == Keyboard) {
+        Type type = (Type)stoi(items[1]);
+        sf::Time inputTime = sf::milliseconds(stoi(items[2]));
+        unsigned int scanCode = stoul(items[3]);
+        bool isExtendedButton = (bool)stoi(items[4]);
+
+        return CreateKeyboardInput(scanCode, type, inputTime, isExtendedButton);
+    } else {
+
+        Type type = (Type)stoi(items[1]);
+        int time = stoi(items[2]);
+        sf::Time inputTime = sf::milliseconds(time);
+        MouseButtonId buttonId = (MouseButtonId)stoul(items[3]);
+        unsigned int mouseX = stoul(items[4]);
+        unsigned int mouseY = stoul(items[5]);
+
+        return CreateMouseInput(buttonId, type, inputTime, sf::Vector2u(mouseX, mouseY), false);
+    }
 }
 
 vector<INPUT> Input::generateRawInputStructure() {

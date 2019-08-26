@@ -1,8 +1,12 @@
 #include "Macro.hpp"
+#include "StringMethods.h"
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 
+using std::fstream;
 using std::cout;
+using std::ios;
 using std::endl;
 
 void Macro::beginPlayback(sf::Time startTime) {
@@ -107,7 +111,73 @@ void Macro::sort() {
     _mutex.unlock();
 }
 
-void Macro::save(string fileName) {
+bool Macro::save(string fileName) {
+
+    std::lock_guard<std::mutex> _lock(_mutex);
+
+    fstream file;
+    file.open(fileName, ios::out);
+
+    if(!file) {
+        return false;
+    }
+
+    file << "#" << Input::KeyboardFormatDescriptionString << endl;
+    file << "#" << Input::MouseFormatDescriptionString << endl;
+    file << "#first line is macro name" << endl;
+    file << name << endl;
+
+    for(unsigned i = 0; i < inputs.size(); ++i) {
+        file << *inputs[i] << endl;
+    }
+
+    file.close();
+
+    return true;
+}
+
+bool Macro::load(string fileName) {
+    _mutex.lock();
+
+    string file = loadFileToString(fileName);
+    
+    if(file == "") {
+        return false;
+    }
+
+    vector<string> lines;
+    separateIntoWords(file, lines, '\n');
+
+    if(lines.size() == 0) {
+        cout << "Error, no DATA to load" << endl;
+        return false;
+    }
+
+    //get rid of comments
+    //need to do this separately so the name is the first entry
+    for(unsigned i = 0; i < lines.size();) {
+        if(lines[i][0] == '#') {
+            lines.erase(lines.begin() + i);
+            continue;
+        }
+
+        ++i;
+    }
+
+    //first non comment line should be the name
+    name = lines[0];
+
+    //start from the 2nd line since the first line isn't an input
+    for(unsigned i = 1; i < lines.size(); ++i) {
+        auto input = Input::CreateInputFromDescriptionString(lines[i]);
+        inputs.push_back(input);
+    }
+
+    _mutex.unlock();
+
+    sort();
+
+    return true;
 }
 
 void Macro::insertInput(shared_ptr<Input> input) {

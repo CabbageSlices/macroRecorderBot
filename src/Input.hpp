@@ -4,7 +4,11 @@
 #include <SFML/System.hpp>
 #include <memory>
 #include <vector>
+#include <string>
+#include <iostream>
 
+using std::ostream;
+using std::string;
 using std::shared_ptr;
 using std::vector;
 
@@ -15,7 +19,7 @@ class Input {
 public:
 
     enum Type {
-        ButtonDown,
+        ButtonDown = 0,
         ButtonUp,
         ButtonDownUp //button press should be sent in a single array in sendinput
     };
@@ -27,7 +31,9 @@ public:
 
     static shared_ptr<Input> CreateKeyboardInput(unsigned int scanCode, Type inputType, sf::Time inputTime, bool _isExtendedKey = false);
     static shared_ptr<Input> CreateKeyboardInput(unsigned int scanCode, Type inputType, bool _isExtendedKey = false);
-    static shared_ptr<Input> CreateMouseInput(MouseButtonId buttonId, Type inputType, sf::Time inputTime, sf::Vector2u _mouseScreenPos);
+    static shared_ptr<Input> CreateMouseInput(MouseButtonId buttonId, Type inputType, sf::Time inputTime, sf::Vector2u _mousePos, bool normalizeCoordinates = true);
+
+    static shared_ptr<Input> CreateInputFromDescriptionString(string description);
 
     static vector<INPUT> GenerateKeyboardInputStructure(Input &keyboardInput);
     static vector<INPUT> GenerateMouseInputStructure(Input &mouseInput);
@@ -35,6 +41,9 @@ public:
 
     static INPUT GenerateKeyboardInputStructureSingle(Input &keyboardInput);
     static INPUT GenerateMouseInputStructureSingle(Input &mouseInput);
+
+    const static string KeyboardFormatDescriptionString;
+    const static string MouseFormatDescriptionString;
 
     vector<INPUT> generateRawInputStructure();
     void sendToSystem();
@@ -46,6 +55,8 @@ public:
     //returns true if the device, button, and aciton is the same
     bool isSameInput(Input &other);
     void print();
+
+    friend ostream& operator<<(ostream &os, const Input &input);
 
     Type getType() {
         return type;
@@ -64,7 +75,7 @@ public:
 private:
 
     enum Device {
-        Mouse,
+        Mouse = 0,
         Keyboard
     };
 
@@ -91,4 +102,12 @@ private:
 inline bool compareInputPointers(shared_ptr<Input> i, shared_ptr<Input> j) {
 
     return (i->time < j->time);
+}
+
+inline ostream& operator<<(ostream& os, const Input &input) {
+    
+    if(input.device == Input::Keyboard)
+        os << input.device << " " << input.type << " " << input.time.asMilliseconds() << " " << input.buttonId << " " << input.isExtendedButton;
+    else
+        os << input.device << " " << input.type << " " << input.time.asMilliseconds() << " " << input.buttonId << " " << input.mousePos.x << " " << input.mousePos.y;
 }

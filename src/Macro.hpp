@@ -28,10 +28,13 @@ public:
 
     void sort();
 
-    void save(string fileName);
+    bool save(string fileName);
+    bool load(string fileName);
     void insertInput(shared_ptr<Input> input);
     void reset();
-    
+    void setName(string _name) {
+        name = _name;
+    }
 
     State getCurrentState() {
         return currentState;

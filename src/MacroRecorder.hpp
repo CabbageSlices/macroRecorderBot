@@ -46,6 +46,7 @@ public:
     void printKeys(bool block = false);
 
     void save(bool block = false);
+    void load();
 
 private:
 
@@ -62,8 +63,9 @@ private:
     shared_ptr<Input> playKey = Input::CreateKeyboardInput(0x3E, Input::ButtonDown);//f4
     shared_ptr<Input> recordKey = Input::CreateKeyboardInput(0x3C, Input::ButtonDown);//f2
     shared_ptr<Input> stopKey = Input::CreateKeyboardInput(0x3D, Input::ButtonDown);//f3
-    shared_ptr<Input> saveKey = Input::CreateKeyboardInput(0x3F, Input::ButtonDown);//f5
     shared_ptr<Input> pauseKey = Input::CreateKeyboardInput(0x40, Input::ButtonDown);//f6
+    shared_ptr<Input> saveKey = Input::CreateKeyboardInput(0x41, Input::ButtonDown);//f7
+    shared_ptr<Input> loadKey = Input::CreateKeyboardInput(0x42, Input::ButtonDown);//f8
 
     vector<shared_ptr<Input> > hotkeys;
 
