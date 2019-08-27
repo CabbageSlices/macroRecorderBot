@@ -31,7 +31,6 @@ void Macro::updatePlayback(sf::Time currentTime) {
     while(currentInputIndex < inputs.size() &&
         elapsedTime >= inputs[currentInputIndex]->time) {
         
-    cout << elapsedTime.asMilliseconds() << endl;
         _mutex.lock();
         inputs[currentInputIndex]->sendToSystem();
         currentInputIndex++;
@@ -226,8 +225,6 @@ void Macro::getDownedKeysWhilePaused(vector<shared_ptr<Input> > &downedKeys) {
         if(!isReleased)
             downedKeys.push_back(inputs[i]);
     }
-
-    cout << "DOWNED COUNT: " <<downedKeys.size() << endl;
 }
 
     
