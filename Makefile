@@ -10,7 +10,7 @@ DEPS := $(OBJECTS:.o=.d)
 
 CPP = g++
 CPP_FLAGS = -I$(INCLUDE_DIR) -I$(HEADERS_DIR) -MMD -MP -std=c++14 -g
-LINKER_FLAGS = -g -L$(LIB_DIR) -lopencv_core411 -lopencv_imgcodecs411 -lopencv_highgui411 -lopencv_imgproc411 -lsfml-graphics -lsfml-window -lsfml-system -lopengl32
+LINKER_FLAGS = -g -L$(LIB_DIR) -lopencv_core411 -lopencv_imgcodecs411 -lopencv_highgui411 -lopencv_imgproc411 -lsfml-graphics -lsfml-window -lsfml-system -lopengl32 -lGdi32 -lgdiplus
 
 all : $(OBJECTS)
 	$(CPP) -o $(OUTPUT_DIR)/proj.exe $(OBJECTS) $(LINKER_FLAGS)

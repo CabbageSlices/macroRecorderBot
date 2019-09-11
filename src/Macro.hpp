@@ -19,7 +19,7 @@ public:
     };
 
     void beginPlayback(sf::Time startTime);
-    void updatePlayback(sf::Time currentTime);
+    bool updatePlayback(sf::Time currentTime);//returns true if playback finished naturally (no more inputs)
     void stop();
     void pause(sf::Time currentTime);
     void resume(sf::Time currentTime);

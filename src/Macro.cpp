@@ -21,10 +21,10 @@ void Macro::beginPlayback(sf::Time startTime) {
     _mutex.unlock();
 }
 
-void Macro::updatePlayback(sf::Time currentTime) {
+bool Macro::updatePlayback(sf::Time currentTime) {
 
     if(currentState != Playing)
-        return;
+        return false;
 
     sf::Time elapsedTime = elapsedPlaybackTime(currentTime);
 
@@ -37,8 +37,10 @@ void Macro::updatePlayback(sf::Time currentTime) {
         _mutex.unlock();
     }
 
-    if(currentInputIndex >= inputs.size())
+    if(currentInputIndex >= inputs.size()) {
         stop();
+        return true;
+    }
 }
 
 void Macro::stop() {
