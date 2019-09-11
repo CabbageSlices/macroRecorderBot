@@ -7,11 +7,13 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <thread>
+#include <gdiplus.h>
 #include "MacroRecorder.hpp"
 #include <memory>
 
 using namespace std;
 using namespace cv;
+using namespace Gdiplus;
 
 sf::Clock globalTimer;
 MacroRecorder recorder(&globalTimer);
@@ -86,7 +88,140 @@ LRESULT CALLBACK lowLevelMouseProc(int nCode, WPARAM wparam, LPARAM lparam) {
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+//TAKEN FROM
+//https://docs.microsoft.com/en-ca/windows/win32/gdiplus/-gdiplus-retrieving-the-class-identifier-for-an-encoder-use
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+{
+   UINT  num = 0;          // number of image encoders
+   UINT  size = 0;         // size of the image encoder array in bytes
+
+   ImageCodecInfo* pImageCodecInfo = NULL;
+
+   GetImageEncodersSize(&num, &size);
+   if(size == 0)
+      return -1;  // Failure
+
+   pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+   if(pImageCodecInfo == NULL)
+      return -1;  // Failure
+
+   GetImageEncoders(num, size, pImageCodecInfo);
+
+   for(UINT j = 0; j < num; ++j)
+   {
+      if( wcscmp(pImageCodecInfo[j].MimeType, format) == 0 )
+      {
+         *pClsid = pImageCodecInfo[j].Clsid;
+         free(pImageCodecInfo);
+         return j;  // Success
+      }    
+   }
+
+   free(pImageCodecInfo);
+   return -1;  // Failure
+}
+
+bool bitmapToOpencvMat(Gdiplus::Bitmap &bitmap, Mat &mat) {
+    return true;
+}
+
+//https://docs.microsoft.com/en-us/windows/win32/gdi/capturing-an-image
+//take screenshot of primary monitor
+bool takeScreenshot(Mat &destination) {
+
+    //get handle to monitor where screenshot is being taken
+    HDC window = GetWindowDC(NULL);
+
+    HDC compatible = CreateCompatibleDC(window);
+
+    int width = GetDeviceCaps(window, HORZRES);
+    int height = GetDeviceCaps(window, VERTRES);
+
+    HBITMAP bitmap = CreateCompatibleBitmap(window, width, height);
+    HBITMAP oldbitmap = (HBITMAP) SelectObject(compatible, bitmap);
+
+    int x = GetSystemMetrics(SM_XVIRTUALSCREEN);//top left corner of main desktop
+    int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+    BitBlt(compatible, 0, 0, width, height, window, x, y, SRCCOPY);
+    bitmap = (HBITMAP) SelectObject(compatible, oldbitmap);
+
+    DeleteDC(compatible);
+    DeleteDC(window);
+
+    //convert to bmp to save it
+    Gdiplus::Bitmap img(bitmap, NULL);
+    CLSID id;
+    GetEncoderClsid(L"image/bmp", &id);
+    img.Save(L"test.bmp", &id, NULL);
+
+    //load it in opencv mat
+    destination = imread("test.bmp", IMREAD_COLOR);
+
+    return true;
+    
+}
+//https://stackoverflow.com/questions/3291167/how-can-i-take-a-screenshot-in-a-windows-application
+//https://stackoverflow.com/questions/24644709/c-hbitmap-bitmap-into-bmp-file
 int main() {
+
+    // bool takeScreenShot(bitmapDestination);
+
+    // ScreenObjectFinder objectFinder{
+    //     ("rune", runeImages),
+    //     ("player", playerImage)
+    // }
+
+    // sf::Vector2f runePos = objectFinder.find("rune");
+
+    // if(runePos.x < 0)
+    //     cout << "no rune present" << endl;
+
+    // Mat screenshot;
+    // takeScreenshot(screenshot);
+
+    // position = objectFinder.find(screenShot, rune);
+
+    // if position is valid:
+    //     playerPosition = objectFinder.find(screenshot, player)
+        
+
+
+    GdiplusStartupInput input;
+    ULONG_PTR gdiplusToken;
+    auto status = GdiplusStartup(&gdiplusToken, &input, NULL);
+
+    if(status != Gdiplus::Ok) {
+        cout << "FAILED" << endl;
+        return -1;
+    }
+
+    
+    sf::Clock clock;
+    
+    Mat screenshot;
+    takeScreenshot(screenshot);
+
+
+
+
+    cout << "SCREENSHOT TIME: " << clock.restart().asMilliseconds() << " MS" << endl;
+
+    imshow("result", screenshot);
+    waitKey();
+    // Mat fullimage = imread("test.bmp", IMREAD_COLOR);
+
+    // cout << "IMAGE LOAD TIME:  " << clock.getElapsedTime().asMilliseconds() << " MS" << endl;
+
+    // imshow("result", fullimage);
+    // waitKey();
+    // int ss = 0;
+
+    GdiplusShutdown(gdiplusToken);
+    return 0;
+}
+
+int main2() {
 
     //create the window
     WNDCLASS wc = {0};
