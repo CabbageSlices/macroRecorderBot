@@ -127,14 +127,21 @@ void MacroRecorder::update() {
         if(currentMacro.getTimeToNextInput(currentTime) > sf::milliseconds(7))
             Sleep(1);
 
-        currentMacro.updatePlayback(currentTime);
-    }
+        //playback finished naturally, so repeat it if wanted
+        if(currentMacro.updatePlayback(currentTime)) {
+            stop();
+            play();
+            return;
+        }
 
-    //finished playing so its stopped
-    if(currentMacro.getCurrentState() == Macro::Stopped) {
-        stop();
-        return;
+        if(currentMacro.getCurrentState() == Macro::Paused) {
+            return;
+        }
     }
+    
+    //the check inside the loop is to enable repeat, this is to change state when macro naturally finishes
+    if(currentMacro.getCurrentState() == Macro::Stopped)
+        stop();
 }
 
 void MacroRecorder::printKeys() {
