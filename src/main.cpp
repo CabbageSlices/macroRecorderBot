@@ -8,6 +8,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <thread>
 #include <gdiplus.h>
+#include "ImageFunctions.hpp"
 #include "MacroRecorder.hpp"
 #include <memory>
 
@@ -185,7 +186,13 @@ int main() {
     // if position is valid:
     //     playerPosition = objectFinder.find(screenshot, player)
         
+    // runeImage;
+    // position =     objectFinder.find(screenShot, rune);
 
+    Mat img = imread("runedarkness3.jpg");
+    Mat target = imread("rune2.png", IMREAD_COLOR);
+
+    findObjectInImage(img, target);
 
     GdiplusStartupInput input;
     ULONG_PTR gdiplusToken;
@@ -207,7 +214,7 @@ int main() {
 
     cout << "SCREENSHOT TIME: " << clock.restart().asMilliseconds() << " MS" << endl;
 
-    imshow("result", screenshot);
+    imshow("result", img);
     waitKey();
     // Mat fullimage = imread("test.bmp", IMREAD_COLOR);
 
