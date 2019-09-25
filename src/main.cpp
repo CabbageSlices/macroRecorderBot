@@ -6,10 +6,13 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
 #include <thread>
 #include <gdiplus.h>
 #include "ImageFunctions.hpp"
 #include "MacroRecorder.hpp"
+#include "ObjectLocator.hpp"
 #include <memory>
 
 using namespace std;
@@ -117,13 +120,53 @@ int main() {
     // if position is valid:
     //     playerPosition = objectFinder.find(screenshot, player)
         
-    // runeImage;
+    // runeIccccccccccccccccccccccccccccccmage;
     // position =     objectFinder.find(screenShot, rune);
 
-    Mat img = imread("runedarkness4.jpg");
-    Mat target = imread("rune2.png", IMREAD_COLOR);
+    Mat img = imread("runedarkness3.jpg");
+    Mat target = imread("runes/rune2.png", IMREAD_COLOR);
+
+    using namespace cv;
+    using namespace cv::xfeatures2d;
+    int minHessian = 400;
+    Ptr<SURF> detector = SURF::create(minHessian);
+
+    //keypoints
+    vector<KeyPoint> keypoints1, keypoints2;
+    Mat descriptors1, descriptors2;
+    detector->detectAndCompute(target, noArray(), keypoints1, descriptors1);
+    detector->detectAndCompute(img, noArray(), keypoints2, descriptors2);
+
+
+    //matching
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
+    vector< std::vector<DMatch> >matches;
+    matcher->knnMatch(descriptors1, descriptors2, matches, 2);
+
+    const float ratioThreshold = 0.7f;
+    vector<DMatch> goodMatches;
+
+    for(unsigned i = 0; i < matches.size(); ++i) {
+        if(matches[i][0].distance / matches[i][1].distance < ratioThreshold)
+            goodMatches.push_back(matches[i][0]);
+    }
+
+    //draw matches
+    // Mat imgMatches;
+    // drawMatches(target, keypoints1, img, keypoints2, goodMatches, imgMatches, Scalar::all(-1), Scalar::all(-1),
+    // vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+    // imshow("matches1", imgMatches);
 
     findObjectInImage(img, target);
+
+    vector<string> imageNames = {"rune1.png", "rune2.png"};
+    ObjectLocator locator("runes", imageNames);
+    // sf::Vector2i runeLocation = locator.getObjectLocation(img);
+
+    // runeNavigator pather("players/ark");
+    // pather.navigateToRune(screenShot, runePos, onFinishCallback);
+    // pather.stop();
 
     GdiplusStartupInput input;
     ULONG_PTR gdiplusToken;
@@ -159,55 +202,55 @@ int main() {
     return 0;
 }
 
-int main2() {
+// int main() {
 
-    //create the window
-    WNDCLASS wc = {0};
-    const char* name = "TEST";
+//     //create the window
+//     WNDCLASS wc = {0};
+//     const char* name = "TEST";
 
-    wc.lpfnWndProc = WndProc;
-    wc.hInstance = GetModuleHandleA(NULL);
-    wc.lpszClassName = name;
+//     wc.lpfnWndProc = WndProc;
+//     wc.hInstance = GetModuleHandleA(NULL);
+//     wc.lpszClassName = name;
 
-    RegisterClass(&wc);
+//     RegisterClass(&wc);
 
-    HWND hwnd = CreateWindowEx(0, wc.lpszClassName, NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+//     HWND hwnd = CreateWindowEx(0, wc.lpszClassName, NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
 
-    //register raw input 
-    RAWINPUTDEVICE Rid;
-    Rid.usUsagePage = 0x01;
-    Rid.usUsage = 6;
-    Rid.hwndTarget = hwnd;
-    Rid.dwFlags = RIDEV_INPUTSINK;
+//     //register raw input 
+//     RAWINPUTDEVICE Rid;
+//     Rid.usUsagePage = 0x01;
+//     Rid.usUsage = 6;
+//     Rid.hwndTarget = hwnd;
+//     Rid.dwFlags = RIDEV_INPUTSINK;
 
-    if(RegisterRawInputDevices(&Rid, 1, sizeof(RAWINPUTDEVICE)) == FALSE) {
-        cout << "REgistration raw input device failed" << endl;
-        return 0;
-    }
+//     if(RegisterRawInputDevices(&Rid, 1, sizeof(RAWINPUTDEVICE)) == FALSE) {
+//         cout << "REgistration raw input device failed" << endl;
+//         return 0;
+//     }
 
-    //start receiving mouse input
-    HHOOK mouse = SetWindowsHookEx(WH_MOUSE_LL, &lowLevelMouseProc, NULL, 0);
+//     //start receiving mouse input
+//     HHOOK mouse = SetWindowsHookEx(WH_MOUSE_LL, &lowLevelMouseProc, NULL, 0);
 
-    if( !mouse) {
-        cout << "HOOK FAILED" << endl;
+//     if( !mouse) {
+//         cout << "HOOK FAILED" << endl;
 
-        UnhookWindowsHookEx(mouse);
-    }
+//         UnhookWindowsHookEx(mouse);
+//     }
 
-    //window message loop
-    MSG msg;
+//     //window message loop
+//     MSG msg;
 
-    while(GetMessage(&msg, NULL, 0, 0) != 0) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
+//     while(GetMessage(&msg, NULL, 0, 0) != 0) {
+//         TranslateMessage(&msg);
+//         DispatchMessage(&msg);
+//     }
 
-    isProgramRunning = false;
+//     isProgramRunning = false;
 
-    UnhookWindowsHookEx(mouse);
+//     UnhookWindowsHookEx(mouse);
 
-    return 0;
-}
+//     return 0;
+// }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch(message) {

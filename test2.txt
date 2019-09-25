@@ -1,0 +1,6 @@
+#format for keyboard input: deviceType inputType inputTime(milliseconds) scanCode isExtendedButton
+#format for mouse input: deviceType inputType inputType(milliseconds) buttonId MousePositionX(between 1-65555) MousePosiitonY(between 1-65555)
+#first line is macro name
+test2
+0 0 1504 1 88669 0
+0 1 1631 1 88669 0

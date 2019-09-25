@@ -3,3 +3,5 @@ build/
 lib/
 .vscode/ipch
 .vscode/ipch/
+bin.7z
+*.png

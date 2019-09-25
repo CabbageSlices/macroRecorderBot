@@ -51,6 +51,9 @@
         "algorithm": "cpp",
         "iterator": "cpp",
         "memory_resource": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "future": "cpp"
     }
 }
